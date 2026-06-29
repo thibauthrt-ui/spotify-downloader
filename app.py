@@ -25,8 +25,9 @@ if st.button("Préparer le téléchargement", type="primary"):
         st.info("Le serveur traite votre playlist... Cela peut prendre quelques minutes selon sa taille.")
         
         # Commande spotdl adaptée pour le serveur (sans dossier local Windows)
+       # Commande simplifiée et optimisée pour Linux (Streamlit Cloud)
         commande = [
-            "python", "-m", "spotdl",
+            "spotdl",
             url_playlist,
             "--output", f"{DOSSIER_TELECHARGEMENT}/{{artists}} - {{title}}.{{output-ext}}",
             "--generate-lrc"
