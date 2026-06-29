@@ -26,10 +26,11 @@ if st.button("Préparer le téléchargement", type="primary"):
         
         # Commande spotdl adaptée pour le serveur (sans dossier local Windows)
        # Commande simplifiée et optimisée pour Linux (Streamlit Cloud)
+     # Commande simplifiée au maximum pour éviter les bugs d'accolades
         commande = [
             "spotdl",
+            "download",
             url_playlist,
-            "--output", f"{DOSSIER_TELECHARGEMENT}/{{artists}} - {{title}}.{{output-ext}}",
             "--generate-lrc"
         ]
         
