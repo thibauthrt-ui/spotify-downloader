@@ -3,69 +3,56 @@ import subprocess
 import os
 import shutil
 
-# Configuration de la page web
-st.set_page_config(page_title="Spotify Downloader", page_icon="🎵", layout="centered")
+st.set_page_config(page_title="Hébergeur Downloader", page_icon="🎵", layout="centered")
+st.title("Téléchargeur de Musique en Ligne 🎵")
+st.write("Collez un lien YouTube, YouTube Music ou Spotify (converti via YT).")
 
-st.title("Téléchargeur de Playlist Spotify 🎵")
-st.write("Entrez le lien d'une playlist Spotify pour récupérer les fichiers MP3.")
-
-# Zone de saisie du lien
-url_playlist = st.text_input("Lien de la playlist Spotify :", placeholder="https://open.spotify.com/playlist/...")
-
-# Dossier temporaire sur le serveur pour stocker les musiques
+url_playlist = st.text_input("Lien de la musique ou playlist :", placeholder="https://...")
 DOSSIER_TELECHARGEMENT = "musiques_temporaires"
 
 if st.button("Préparer le téléchargement", type="primary"):
     if url_playlist:
-        # Nettoyage d'un ancien téléchargement s'il existe
         if os.path.exists(DOSSIER_TELECHARGEMENT):
             shutil.rmtree(DOSSIER_TELECHARGEMENT)
         os.makedirs(DOSSIER_TELECHARGEMENT)
         
-        st.info("Le serveur traite votre playlist... Cela peut prendre quelques minutes selon sa taille.")
+        st.info("Traitement en cours... Veuillez patienter.")
         
-        # Commande spotdl adaptée pour le serveur (sans dossier local Windows)
-       # Commande simplifiée et optimisée pour Linux (Streamlit Cloud)
-     # Commande simplifiée au maximum pour éviter les bugs d'accolades
+        # Commande robuste utilisant yt-dlp directement pour extraire le MP3
         commande = [
-            "spotdl",
-            "download",
-            url_playlist,
-            "--generate-lrc"
+            "yt-dlp",
+            "-x",
+            "--audio-format", "mp3",
+            "--audio-quality", "0",
+            "-o", f"{DOSSIER_TELECHARGEMENT}/%(title)s.%(ext)s",
+            url_playlist
         ]
         
         try:
-            # Exécution de spotdl
             subprocess.run(commande, check=True)
-            
-            # Vérifier si des fichiers ont bien été téléchargés
             fichiers = os.listdir(DOSSIER_TELECHARGEMENT)
+            
             if fichiers:
-                st.success(f"Téléchargement réussi sur le serveur ! ({len(fichiers)} fichiers récupérés)")
+                st.success(f"Récupération réussie ! ({len(fichiers)} fichier(s) prêt(s))")
                 
-                # Création d'une archive ZIP pour l'utilisateur
-                nom_archive = "MaPlaylist_Spotify"
+                nom_archive = "MaPlaylist"
                 shutil.make_archive(nom_archive, 'zip', DOSSIER_TELECHARGEMENT)
                 fichier_zip = f"{nom_archive}.zip"
                 
-                # Lecture du fichier ZIP pour le proposer au téléchargement
                 with open(fichier_zip, "rb") as f:
                     st.download_button(
-                        label="📥 Télécharger ma playlist (.ZIP)",
+                        label="📥 Télécharger les fichiers (.ZIP)",
                         data=f,
-                        file_name="MaPlaylist_Spotify.zip",
+                        file_name="Playlist.zip",
                         mime="application/zip"
                     )
                 
-                # Nettoyage après création du ZIP
                 shutil.rmtree(DOSSIER_TELECHARGEMENT)
                 if os.path.exists(fichier_zip):
                     os.remove(fichier_zip)
             else:
-                st.error("Le dossier est vide. Vérifiez que le lien de la playlist est public.")
-                
+                st.error("Aucun fichier n'a pu être extrait.")
         except subprocess.CalledProcessError as e:
-            st.error("Une erreur est survenue lors de l'exécution de spotdl.")
-            st.code(str(e))
+            st.error("Le serveur a rencontré une erreur de conversion.")
     else:
-        st.warning("Veuillez coller un lien de playlist valide.")
+        st.warning("Veuillez entrer un lien valide.")
