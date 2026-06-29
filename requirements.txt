@@ -1,3 +1,4 @@
 streamlit
 spotdl
 yt-dlp
+setuptools
